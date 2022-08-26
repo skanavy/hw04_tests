@@ -35,7 +35,8 @@ class TaskURLTests(TestCase):
 
     def test_slug_detail_url_exists_at_desired_location_authorized(self):
         """Страница /group/test-slug/ доступна любому пользователю."""
-        response = self.guest_client.get(reverse('posts:groups', kwargs={'slug': self.group.slug}))
+        response = self.guest_client.get(reverse(
+            'posts:groups', kwargs={'slug': self.group.slug}))
         self.assertEqual(response.status_code, 200)
 
     def test_profile_user_added_url_exists_at_desired_location(self):
@@ -45,13 +46,15 @@ class TaskURLTests(TestCase):
 
     def test_post_detail_added_url_exists_at_desired_location(self):
         """Страница /posts/id доступна любому пользователю."""
-        response = self.guest_client.get(reverse('posts:post_detail', kwargs={'post_id': self.post.id}))
+        response = self.guest_client.get(reverse(
+            'posts:post_detail', kwargs={'post_id': self.post.id}))
         self.assertEqual(response.status_code, 200)
 
     # Проверяем доступность страниц для авторизованного пользователя
     def test_post_edit_url_exists_at_desired_location(self):
         """Страница /posts/<post_id>/edit/ доступна авторизованному пользователю."""
-        response = self.authorized_client.get(reverse('posts:post_edit', kwargs={'pk': self.post.id}))
+        response = self.authorized_client.get(reverse(
+            'posts:post_edit', kwargs={'pk': self.post.id}))
         self.assertEqual(response.status_code, 200)
 
     # Проверяем доступность страниц для авторизованного пользователя
@@ -68,7 +71,8 @@ class TaskURLTests(TestCase):
         """Страница /post/<post_id>/edit/ перенаправит анонимного пользователя
         на страницу логина.
         """
-        response = self.guest_client.get(reverse('posts:post_edit', kwargs={'pk': self.post.id}))
+        response = self.guest_client.get(reverse(
+            'posts:post_edit', kwargs={'pk': self.post.id}))
         self.assertRedirects(
             response, f'/auth/login/?next=/posts/{self.post.id}/edit/')
 
@@ -78,7 +82,7 @@ class TaskURLTests(TestCase):
         """
         response = self.guest_client.get('/create/', follow=True)
         self.assertRedirects(
-            response, f'/auth/login/?next=/create/')
+            response, '/auth/login/?next=/create/')
 
     # Проверка вызываемых шаблонов для каждого адреса
     def test_urls_uses_correct_template(self):
@@ -88,7 +92,7 @@ class TaskURLTests(TestCase):
             'posts/profile.html': f'/profile/{self.author}/',
             'posts/group_list.html': f'/group/{self.group.slug}/',
             'posts/post_detail.html': f'/posts/{self.post.id}/',
-            'posts/create_post.html': f'/create/',
+            'posts/create_post.html': '/create/',
         }
         for template, url in templates_url_names.items():
             with self.subTest(url=url):

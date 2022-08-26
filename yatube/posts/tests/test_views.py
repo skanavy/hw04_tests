@@ -83,8 +83,7 @@ class TaskURLTests(TestCase):
         """Шаблон post_detail сформирован с правильным контекстом."""
         response = self.authorized_client.get(
             reverse('posts:post_detail',
-                    kwargs={'post_id': self.post.id})
-            )
+                    kwargs={'post_id': self.post.id}))
         self.assertEqual(response.context['post'].text, 'test_post')
         self.assertEqual(response.context['post'].group, self.group)
 
@@ -158,4 +157,3 @@ class PaginatorViewsTest(TestCase):
     def test_second_page_contains_three_records(self):
         response = self.client.get(reverse('posts:index') + '?page=2')
         self.assertEqual(len(response.context['page_obj']), 3)
-
