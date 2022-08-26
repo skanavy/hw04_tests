@@ -52,7 +52,7 @@ class TaskURLTests(TestCase):
 
     # Проверяем доступность страниц для авторизованного пользователя
     def test_post_edit_url_exists_at_desired_location(self):
-        """Страница /posts/<post_id>/edit/ доступна авторизованному пользователю."""
+        """Страница /posts/<post_id>/edit/ доступна автору."""
         response = self.authorized_client.get(reverse(
             'posts:post_edit', kwargs={'pk': self.post.id}))
         self.assertEqual(response.status_code, 200)
