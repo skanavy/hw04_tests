@@ -1,0 +1,13 @@
+<!-- templates/about/author.html -->
+{% extends "base.html" %}
+{% block title %}Об авторе проекта{% endblock %}
+{% block content %}
+<h1>Привет, я автор</h1>
+<p>
+  {% load static %}
+  <img src="{% static 'img/photo.jpg' %}">
+</p>
+<p>
+  Учу джангу
+</p>
+{% endblock %}

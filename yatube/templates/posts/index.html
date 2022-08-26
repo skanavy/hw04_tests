@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}
+YATUBE
+{% endblock %}
+{% block content %}
+{% for post in page_obj %}
+{% include 'posts/card.html' %}
+{% endfor %}
+{% include 'includes/paginator.html' %}
+{% endblock %}
