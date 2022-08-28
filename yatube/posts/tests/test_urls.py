@@ -35,15 +35,21 @@ class TaskURLTests(TestCase):
         """URL-адрес использует соответствующий шаблон."""
 
         guest = [reverse('posts:index'),
-                 reverse('posts:groups', kwargs={'slug': self.group.slug}),
-                 reverse('posts:profile', kwargs={'username': self.author}),
-                 reverse('posts:post_detail', kwargs={'post_id': self.post.id})]
+                 reverse('posts:groups',
+                         kwargs={'slug': self.group.slug}),
+                 reverse('posts:profile',
+                         kwargs={'username': self.author}),
+                 reverse('posts:post_detail',
+                         kwargs={'post_id': self.post.id})]
         for url in guest:
-            self.assertEqual(self.guest_client.get(url).status_code, HTTPStatus.OK)
+            self.assertEqual(
+                self.guest_client.get(url).status_code, HTTPStatus.OK)
         authorized = [reverse('posts:post_create'),
-                      reverse('posts:post_edit', kwargs={'pk': self.post.id})]
+                      reverse('posts:post_edit',
+                              kwargs={'pk': self.post.id})]
         for url in authorized:
-            self.assertEqual(self.authorized_client.get(url).status_code, HTTPStatus.OK)
+            self.assertEqual(
+                self.authorized_client.get(url).status_code, HTTPStatus.OK)
 
     def test_wrong_uri_returns_404(self):
         response = self.client.get('/wrong/url/')
