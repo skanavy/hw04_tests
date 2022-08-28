@@ -27,8 +27,7 @@ class PostModelTest(TestCase):
         self.assertEqual(post.text[:15], str(post))
 
         group = PostModelTest.group
-        expected_object_name = group.title
-        self.assertEqual(expected_object_name, str(group))
+        self.assertEqual(self.group.title, str(group))
 
     def test_verbose_name(self):
         """verbose_name в полях совпадает с ожидаемым."""

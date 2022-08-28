@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -5,6 +7,8 @@ from django.urls import reverse
 from ..models import Group, Post
 
 User = get_user_model()
+HTTPStatus.OK == 200
+HTTPStatus.NOT_FOUND == 404
 
 
 class TaskURLTests(TestCase):
@@ -27,45 +31,23 @@ class TaskURLTests(TestCase):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.author)
 
-    # Проверяем общедоступные страницы
-    def test_home_url_exists_at_desired_location(self):
-        """Страница / доступна любому пользователю."""
-        response = self.guest_client.get('/')
-        self.assertEqual(response.status_code, 200)
+    def test_pages_uses_correct_template(self):
+        """URL-адрес использует соответствующий шаблон."""
 
-    def test_slug_detail_url_exists_at_desired_location_authorized(self):
-        """Страница /group/test-slug/ доступна любому пользователю."""
-        response = self.guest_client.get(reverse(
-            'posts:groups', kwargs={'slug': self.group.slug}))
-        self.assertEqual(response.status_code, 200)
-
-    def test_profile_user_added_url_exists_at_desired_location(self):
-        """Страница /profile/user доступна любому пользователю."""
-        response = self.guest_client.get('/profile/NoName/')
-        self.assertEqual(response.status_code, 200)
-
-    def test_post_detail_added_url_exists_at_desired_location(self):
-        """Страница /posts/id доступна любому пользователю."""
-        response = self.guest_client.get(reverse(
-            'posts:post_detail', kwargs={'post_id': self.post.id}))
-        self.assertEqual(response.status_code, 200)
-
-    # Проверяем доступность страниц для авторизованного пользователя
-    def test_post_edit_url_exists_at_desired_location(self):
-        """Страница /posts/<post_id>/edit/ доступна автору."""
-        response = self.authorized_client.get(reverse(
-            'posts:post_edit', kwargs={'pk': self.post.id}))
-        self.assertEqual(response.status_code, 200)
-
-    # Проверяем доступность страниц для авторизованного пользователя
-    def test_create_url_exists_at_desired_location(self):
-        """Страница /create/ доступна авторизованному пользователю."""
-        response = self.authorized_client.get('/create/')
-        self.assertEqual(response.status_code, 200)
+        guest = [reverse('posts:index'),
+                 reverse('posts:groups', kwargs={'slug': self.group.slug}),
+                 reverse('posts:profile', kwargs={'username': self.author}),
+                 reverse('posts:post_detail', kwargs={'post_id': self.post.id})]
+        for url in guest:
+            self.assertEqual(self.guest_client.get(url).status_code, HTTPStatus.OK)
+        authorized = [reverse('posts:post_create'),
+                      reverse('posts:post_edit', kwargs={'pk': self.post.id})]
+        for url in authorized:
+            self.assertEqual(self.authorized_client.get(url).status_code, HTTPStatus.OK)
 
     def test_wrong_uri_returns_404(self):
         response = self.client.get('/wrong/url/')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
 
     def test_post_edit_url_redirect_anonymous_on_admin_login(self):
         """Страница /post/<post_id>/edit/ перенаправит анонимного пользователя

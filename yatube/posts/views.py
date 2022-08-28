@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
@@ -5,11 +6,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from .forms import PostForm
 from .models import Group, Post, User
 
-MAX_POSTS = 10
-
 
 def paginate_queryset(post_list, request):
-    paginator = Paginator(post_list, MAX_POSTS)
+    paginator = Paginator(post_list, settings.MAX_POSTS)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     return page_obj
