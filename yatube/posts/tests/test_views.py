@@ -88,7 +88,7 @@ class TaskURLTests(TestCase):
         self.assertEqual(response.context['post'].text, 'test_post')
         self.assertEqual(response.context['post'].group, self.group)
 
-    def context_tester(self, response):
+    def post_check(self, response):
         post = response.context['page_obj'][0]
         self.assertEqual(post.id, self.post.pk)
         self.assertEqual(post.text, self.post.text)
@@ -98,21 +98,25 @@ class TaskURLTests(TestCase):
     def test_index_show_correct_context(self):
         """Шаблон index сформирован с правильным контекстом."""
         response = self.authorized_client.get(reverse('posts:index'))
-        self.context_tester(response)
+        self.post_check(response)
 
     def test_group_list_show_correct_context(self):
         """Шаблон group_list сформирован с правильным контекстом."""
         response = self.authorized_client.get(
             reverse('posts:groups', kwargs={'slug': self.group.slug})
         )
-        self.context_tester(response)
+        group = response.context['group']
+        self.assertEqual(group, self.group)
+        self.post_check(response)
 
     def test_profile_show_correct_context(self):
         """Шаблон group_list сформирован с правильным контекстом."""
         response = self.authorized_client.get(
             reverse('posts:profile', kwargs={'username': self.author})
         )
-        self.context_tester(response)
+        author = response.context['author']
+        self.assertEqual(author, self.author)
+        self.post_check(response)
 
     def test_index_page_list_eq_1(self):
         """На страницу index передаётся ожидаемое количество объектов."""
