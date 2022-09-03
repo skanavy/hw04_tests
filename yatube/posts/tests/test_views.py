@@ -1,5 +1,6 @@
 from django import forms
 from django.conf import settings
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -15,6 +16,19 @@ class TaskURLTests(TestCase):
         super().setUpClass()
         cls.author = User.objects.create_user(username='StasBasov')
 
+        small_gif = (
+            b'\x47\x49\x46\x38\x39\x61\x02\x00'
+            b'\x01\x00\x80\x00\x00\x00\x00\x00'
+            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+            b'\x0A\x00\x3B'
+        )
+        cls.uploaded = SimpleUploadedFile(
+            name='small.gif',
+            content=small_gif,
+            content_type='image/gif'
+        )
         cls.group = Group.objects.create(
             title='test_title',
             description='test_description',
@@ -25,6 +39,7 @@ class TaskURLTests(TestCase):
             text='test_post',
             author=cls.author,
             group=cls.group,
+            image=cls.uploaded
         )
 
     def setUp(self):
@@ -94,6 +109,7 @@ class TaskURLTests(TestCase):
         self.assertEqual(post.text, self.post.text)
         self.assertEqual(post.author, self.author)
         self.assertEqual(post.group, self.group)
+        self.assertEqual(post.image, self.post.image)
 
     def test_index_show_correct_context(self):
         """Шаблон index сформирован с правильным контекстом."""
