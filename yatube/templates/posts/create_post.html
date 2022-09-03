@@ -27,7 +27,7 @@
         </div>
         {% endfor %}
         {% endif %}
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
           {% csrf_token %}
           <div class="form-group row my-3 p-3">
             {% for field in form %}
