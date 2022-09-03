@@ -22,11 +22,16 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'u_x^w01w+r+48+-7mbiuie^+&f8inmpy4o2wvwk_anyzte6z-e'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 MAX_POSTS = 10
-ALLOWED_HOSTS = []
+CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
 
-# Application definition
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '[::1]',
+    'testserver',
+]
 
 INSTALLED_APPS = [
     'posts.apps.PostsConfig',
@@ -119,9 +124,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
-
 STATIC_URL = '/static/'
-
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 LOGIN_URL = 'users:login'
 LOGIN_REDIRECT_URL = 'posts:index'
 

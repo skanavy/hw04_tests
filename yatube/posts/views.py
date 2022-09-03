@@ -77,3 +77,4 @@ def post_edit(request, pk):
         return redirect('posts:post_detail', post_id=pk)
     return render(request, 'posts/create_post.html',
                   {'form': form, 'is_edit': True})
+
