@@ -1,27 +1,38 @@
+import shutil
+import tempfile
 from http import HTTPStatus
-
 from django.contrib.auth import get_user_model
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
-
+from .test_forms import gif_create
 from ..models import Group, Post
 
+MEDIA_ROOT = tempfile.mkdtemp()
 User = get_user_model()
 
 
+@override_settings(MEDIA_ROOT=MEDIA_ROOT)
 class TaskURLTests(TestCase):
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(MEDIA_ROOT, ignore_errors=True)
+        super().tearDownClass()
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.author = User.objects.create_user(username='NoName')
-        cls.post = Post.objects.create(
-            text='Тестовый текст',
-            author=cls.author,
-        )
+        cls.author = User.objects.create_user(username='author')
+
         cls.group = Group.objects.create(
             title='test_title',
             description='test_description',
             slug='test_slug'
+        )
+
+        cls.post = Post.objects.create(
+            text='test_post',
+            author=cls.author,
+            group=cls.group,
+            image=gif_create()
         )
 
     def setUp(self):
