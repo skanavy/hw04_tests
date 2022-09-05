@@ -17,6 +17,7 @@ class TaskURLTests(TestCase):
     def tearDownClass(cls):
         shutil.rmtree(MEDIA_ROOT, ignore_errors=True)
         super().tearDownClass()
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -80,6 +81,20 @@ class TaskURLTests(TestCase):
         response = self.guest_client.get('/create/', follow=True)
         self.assertRedirects(
             response, '/auth/login/?next=/create/')
+
+    def test_add_comment_non_authorized(self):
+        """Тест redirect /add_comment/ """
+        response = self.guest_client.get(reverse(
+            'posts:add_comment', kwargs={'post_id': self.post.id}), )
+        self.assertRedirects(
+            response, '/auth/login/?next=/posts/1/comment/')
+
+    def test_add_comment_authorized(self):
+        """Тест redirect /add_comment/ """
+        response = self.authorized_client.get(reverse(
+            'posts:add_comment', kwargs={'post_id': self.post.id}), )
+        self.assertRedirects(
+            response, f'/posts/{self.post.id}/')
 
     # Проверка вызываемых шаблонов для каждого адреса
     def test_urls_uses_correct_template(self):

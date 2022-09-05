@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from ..models import Group, Post
+from ..models import Group, Post, Comment
 from .test_forms import gif_create
 MEDIA_ROOT = tempfile.mkdtemp()
 User = get_user_model()
@@ -33,6 +33,11 @@ class TaskViewTests(TestCase):
             author=cls.author,
             group=cls.group,
             image=gif_create()
+        )
+        cls.comment = Comment.objects.create(
+            text='test_comment',
+            author=cls.author,
+            post=cls.post,
         )
 
     def setUp(self):
@@ -95,6 +100,7 @@ class TaskViewTests(TestCase):
                     kwargs={'post_id': self.post.id}))
         self.assertEqual(response.context['post'].text, 'test_post')
         self.assertEqual(response.context['post'].group, self.group)
+        self.assertEqual(response.context['comments'][0].text, self.comment.text)
 
     def post_check(self, response):
         post = response.context['page_obj'][0]
