@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
-
+from django.core.cache import cache
 from ..models import Group, Post, Comment
 from .test_forms import gif_create
 MEDIA_ROOT = tempfile.mkdtemp()
@@ -47,6 +47,7 @@ class TaskViewTests(TestCase):
 
     def test_pages_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
+        cache.clear()
         templates_page_names = {
             'posts/index.html': reverse('posts:index'),
             'posts/group_list.html':
@@ -112,6 +113,7 @@ class TaskViewTests(TestCase):
 
     def test_index_show_correct_context(self):
         """Шаблон index сформирован с правильным контекстом."""
+        cache.clear()
         response = self.authorized_client.get(reverse('posts:index'))
         self.post_check(response)
 
@@ -134,6 +136,7 @@ class TaskViewTests(TestCase):
         self.post_check(response)
 
     def test_index_page_list_eq_1(self):
+        cache.clear()
         """На страницу index передаётся ожидаемое количество объектов."""
         response = self.authorized_client.get(reverse('posts:index'))
         self.assertEqual(len(response.context.get(
@@ -145,24 +148,34 @@ class TaskViewTests(TestCase):
         response = self.authorized_client.get(
             reverse('posts:groups', kwargs={'slug': self.group.slug})
         )
-        correct_post = response.context.get(
-            'page_obj'
-        ).object_list[0]
+        correct_post = response.context.get('page_obj').object_list[0]
         self.assertEqual(len(
             response.context.get('page_obj').object_list), 1)
         self.assertEqual(correct_post, self.post)
 
     def test_profile_page_list_eq_1(self):
-        """На страницу group передаётся ожидаемое количество объектов."""
+        """На страницу profile передаётся ожидаемое количество объектов."""
+
         response = self.authorized_client.get(
             reverse('posts:profile', kwargs={'username': self.author})
         )
-        correct_post = response.context.get(
-            'page_obj'
-        ).object_list[0]
+        correct_post = response.context.get('page_obj').object_list[0]
         self.assertEqual(
             len(response.context.get('page_obj').object_list), 1)
         self.assertEqual(correct_post, self.post)
+
+    def test_cache_index(self):
+        """Проверка очищения кэша на index."""
+        response = self.guest_client.get(reverse('posts:index')).content
+        Post.objects.create(
+            text='test_new_post',
+            author=self.author,
+        )
+        no_cache = self.guest_client.get(reverse('posts:index')).content
+        self.assertEqual(response, no_cache, 'Количество постов отличается')
+        cache.clear()
+        cached = self.guest_client.get(reverse('posts:index')).content
+        self.assertNotEqual(response, cached, 'Количество постов одинаково')
 
 
 class PaginatorViewsTest(TestCase):
@@ -188,9 +201,12 @@ class PaginatorViewsTest(TestCase):
         Post.objects.bulk_create(posts)
 
     def test_first_page_contains_ten_records(self):
+        cache.clear()
         response = self.client.get(reverse('posts:index'))
         self.assertEqual(len(response.context['page_obj']), settings.MAX_POSTS)
 
     def test_second_page_contains_three_records(self):
+        cache.clear()
         response = self.client.get(reverse('posts:index') + '?page=2')
         self.assertEqual(len(response.context['page_obj']), 3)
+

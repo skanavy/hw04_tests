@@ -6,6 +6,7 @@ from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from .test_forms import gif_create
 from ..models import Group, Post
+from django.core.cache import cache
 
 MEDIA_ROOT = tempfile.mkdtemp()
 User = get_user_model()
@@ -98,6 +99,7 @@ class TaskURLTests(TestCase):
 
     # Проверка вызываемых шаблонов для каждого адреса
     def test_urls_uses_correct_template(self):
+        cache.clear()
         """URL-адрес использует соответствующий шаблон."""
         templates_url_names = {
             'posts/index.html': '/',
