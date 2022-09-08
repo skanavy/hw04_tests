@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from django.core.cache import cache
-from ..models import Group, Post, Comment
+from ..models import Group, Post, Comment, Follow
 from .test_forms import gif_create
 MEDIA_ROOT = tempfile.mkdtemp()
 User = get_user_model()
@@ -22,6 +22,7 @@ class TaskViewTests(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.author = User.objects.create_user(username='StasBasov')
+        cls.user = User.objects.create_user(username='Somebody')
         cls.group = Group.objects.create(
             title='test_title',
             description='test_description',
@@ -44,6 +45,8 @@ class TaskViewTests(TestCase):
         self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.author)
+        self.authorized_user_client = Client()
+        self.authorized_user_client.force_login(self.user)
 
     def test_pages_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
@@ -176,6 +179,34 @@ class TaskViewTests(TestCase):
         cache.clear()
         cached = self.guest_client.get(reverse('posts:index')).content
         self.assertNotEqual(response, cached, 'Количество постов одинаково')
+
+    def test_follow(self):
+        self.authorized_user_client.get(
+            reverse('posts:profile_follow', kwargs={'username': self.author}))
+        followers = len(Follow.objects.all().filter(author=self.author))
+        self.assertEqual(followers, 1)
+
+    def test_unfollow(self):
+        before_unfollow = len(
+            Follow.objects.all().filter(author=self.author))
+
+        self.authorized_user_client.get(
+            reverse('posts:profile_follow', kwargs={'username': self.author}))
+        self.authorized_user_client.get(
+            reverse('posts:profile_unfollow', kwargs={'username': self.author}))
+
+        after_unfollow = len(
+            Follow.objects.all().filter(author_id=self.author.id))
+        self.assertEqual(after_unfollow, before_unfollow)
+
+    def test_follow_index(self):
+        """Новая запись пользователя появляется в follow"""
+        response = self.authorized_user_client.get(reverse('posts:follow_index'))
+        self.authorized_client.get(
+            reverse('posts:profile_follow', kwargs={'username': self.author}))
+        response_after_follow = self.authorized_user_client.get(
+            reverse('posts:follow_index'))
+        self.assertEqual(response.content, response_after_follow.content)
 
 
 class PaginatorViewsTest(TestCase):
